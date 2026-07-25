@@ -41,7 +41,7 @@ A high-reliability, production-grade microservice implementing a financial accou
 | **Framework** | Spring Boot 4.1.0 (Web MVC, Security, Data JPA, Actuator) |
 | **Build Tool** | Gradle 9.6.1 (Kotlin DSL `build.gradle.kts`) |
 | **Database & ORM** | MySQL 8.0, Spring Data JPA, Flyway 11, Redis |
-| **Infrastructure (IaC)** | Terraform (AWS Tokyo `ap-northeast-1`: App Runner, ECR, RDS MySQL) |
+| **Infrastructure (IaC)** | Terraform (AWS Tokyo `ap-northeast-1`: ECS Fargate, ECR, RDS MySQL 8.0, OIDC) |
 | **Security** | Spring Security OAuth2 Resource Server (Nimbus JWT) |
 | **Testing** | JUnit 5, AssertJ, Mockito, Spring Security Test, Spring Boot WebMvc Test |
 | **API Docs** | OpenAPI 3.0 / Swagger UI (`springdoc-openapi`) |
@@ -55,7 +55,8 @@ The repository includes a complete **Terraform** configuration under `terraform/
 ### AWS Resources Provisioned
 * **AWS ECR Repository:** `450963614191.dkr.ecr.ap-northeast-1.amazonaws.com/spring-bank-ledger`
 * **AWS RDS MySQL 8.0:** `spring-bank-ledger-db.cn200ami8jvv.ap-northeast-1.rds.amazonaws.com:3306` (Free-Tier `db.t3.micro` with 20 GB `gp3` storage and automated Flyway migrations)
-* **AWS App Runner:** Managed serverless container runtime (1 vCPU, 2GB RAM) running Spring Boot with automated HTTPS provisioning.
+* **AWS ECS Fargate Cluster & Service:** Container task (0.25 vCPU, 0.5 GB RAM) running Spring Boot connected to MySQL inside AWS Tokyo VPC with Direct Public IP allocation ($0/mo Free Tier).
+* **AWS IAM OIDC Provider & Roles:** Keyless authentication for GitHub Actions CI/CD workflows (`sts:AssumeRoleWithWebIdentity`).
 
 ### Provisioning Steps
 ```bash
@@ -82,7 +83,7 @@ docker build -t spring-bank-ledger .
 docker tag spring-bank-ledger:latest 450963614191.dkr.ecr.ap-northeast-1.amazonaws.com/spring-bank-ledger:latest
 docker push 450963614191.dkr.ecr.ap-northeast-1.amazonaws.com/spring-bank-ledger:latest
 
-# 5. Provision App Runner Service
+# 5. Provision ECS Fargate Service & OIDC Role
 terraform apply
 ```
 
@@ -92,10 +93,10 @@ The repository features automated CI and CD pipelines under `.github/workflows/`
   * Spins up a healthy MySQL 8.0 service container in GitHub Actions runner.
   * Sets up JDK 25 and executes the full Gradle test suite (`./gradlew test`) under `SPRING_PROFILES_ACTIVE=mysql`.
 * **Continuous Deployment (`.github/workflows/deploy.yml`):**
-  * Authenticates with AWS via GitHub Repository Secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`).
+  * Authenticates seamlessly with AWS IAM using **OpenID Connect (OIDC)** without long-lived static secrets (`sts:AssumeRoleWithWebIdentity`).
   * Builds and tags the multi-stage Docker image with `$GITHUB_SHA` and `latest`.
   * Pushes the image to **Amazon ECR Tokyo**.
-  * Triggers automatic container deployment in **AWS App Runner**.
+  * Executes `aws ecs update-service` for zero-downtime rolling deployment on **AWS ECS Fargate**.
 
 ---
 
