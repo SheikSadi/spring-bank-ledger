@@ -31,8 +31,8 @@ resource "aws_iam_role" "github_actions" {
           }
           StringLike = {
             "token.actions.githubusercontent.com:sub" = [
-              "repo:SheikSadi/spring-bank-ledger:*",
-              "repo:sheiksadi/spring-bank-ledger:*"
+              "repo:SheikSadi*/spring-bank-ledger*:*",
+              "repo:sheiksadi*/spring-bank-ledger*:*"
             ]
           }
         }
