@@ -88,7 +88,7 @@ terraform apply
 
 ### 🔄 Automated CI/CD (GitHub Actions)
 The repository features an automated CD pipeline (`.github/workflows/deploy.yml`). On every `push` to `main`:
-1. Authenticates with AWS via GitHub Repository Secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`).
+1. Authenticates with AWS via GitHub Repository Secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optional `AWS_SESSION_TOKEN` for temporary credentials).
 2. Builds and tags the Docker image with `$GITHUB_SHA` and `latest`.
 3. Pushes the image to **Amazon ECR Tokyo**.
 4. Triggers automatic container deployment in **AWS App Runner**.
