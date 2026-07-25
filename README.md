@@ -41,9 +41,50 @@ A high-reliability, production-grade microservice implementing a financial accou
 | **Framework** | Spring Boot 4.1.0 (Web MVC, Security, Data JPA, Actuator) |
 | **Build Tool** | Gradle 9.6.1 (Kotlin DSL `build.gradle.kts`) |
 | **Database & ORM** | MySQL 8.0, Spring Data JPA, Flyway 11, Redis |
+| **Infrastructure (IaC)** | Terraform (AWS Tokyo `ap-northeast-1`: App Runner, ECR, RDS MySQL) |
 | **Security** | Spring Security OAuth2 Resource Server (Nimbus JWT) |
 | **Testing** | JUnit 5, AssertJ, Mockito, Spring Security Test, Spring Boot WebMvc Test |
 | **API Docs** | OpenAPI 3.0 / Swagger UI (`springdoc-openapi`) |
+
+---
+
+## ☁️ Infrastructure as Code (AWS Tokyo Deployment with Terraform)
+
+The repository includes a complete **Terraform** configuration under `terraform/` to provision production-grade AWS infrastructure in **Tokyo (`ap-northeast-1`)**:
+
+### AWS Resources Provisioned
+* **AWS ECR Repository:** `450963614191.dkr.ecr.ap-northeast-1.amazonaws.com/spring-bank-ledger`
+* **AWS RDS MySQL 8.0:** `spring-bank-ledger-db.cn200ami8jvv.ap-northeast-1.rds.amazonaws.com:3306` (Free-Tier `db.t3.micro` with 20 GB `gp3` storage and automated Flyway migrations)
+* **AWS App Runner:** Managed serverless container runtime (1 vCPU, 2GB RAM) running Spring Boot with automated HTTPS provisioning.
+
+### Provisioning Steps
+```bash
+cd terraform
+
+# 0. Export active AWS CLI session credentials to shell environment
+eval $(aws configure export-credentials --format env)
+
+# 1. Create S3 Bucket for Remote State (one-time setup)
+aws s3api create-bucket \
+  --bucket spring-bank-ledger-tfstate-sheiksadi \
+  --region ap-northeast-1 \
+  --create-bucket-configuration LocationConstraint=ap-northeast-1
+
+# 2. Initialize Terraform (connects to AWS S3 remote backend)
+terraform init
+
+# 3. Provision ECR & RDS Database
+terraform apply -target=aws_ecr_repository.app_repo -target=aws_db_instance.ledger_db
+
+# 4. Authenticate Docker with AWS ECR Tokyo & Push Image
+aws ecr get-login-password --region ap-northeast-1 | docker login --username AWS --password-stdin 450963614191.dkr.ecr.ap-northeast-1.amazonaws.com
+docker build -t spring-bank-ledger .
+docker tag spring-bank-ledger:latest 450963614191.dkr.ecr.ap-northeast-1.amazonaws.com/spring-bank-ledger:latest
+docker push 450963614191.dkr.ecr.ap-northeast-1.amazonaws.com/spring-bank-ledger:latest
+
+# 5. Provision App Runner Service
+terraform apply
+```
 
 ---
 
