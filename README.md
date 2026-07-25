@@ -87,11 +87,15 @@ terraform apply
 ```
 
 ### 🔄 Automated CI/CD (GitHub Actions)
-The repository features an automated CD pipeline (`.github/workflows/deploy.yml`). On every `push` to `main`:
-1. Authenticates with AWS via GitHub Repository Secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and optional `AWS_SESSION_TOKEN` for temporary credentials).
-2. Builds and tags the Docker image with `$GITHUB_SHA` and `latest`.
-3. Pushes the image to **Amazon ECR Tokyo**.
-4. Triggers automatic container deployment in **AWS App Runner**.
+The repository features automated CI and CD pipelines under `.github/workflows/`:
+* **Continuous Integration (`.github/workflows/ci.yml`):**
+  * Spins up a healthy MySQL 8.0 service container in GitHub Actions runner.
+  * Sets up JDK 25 and executes the full Gradle test suite (`./gradlew test`) under `SPRING_PROFILES_ACTIVE=mysql`.
+* **Continuous Deployment (`.github/workflows/deploy.yml`):**
+  * Authenticates with AWS via GitHub Repository Secrets (`AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`).
+  * Builds and tags the multi-stage Docker image with `$GITHUB_SHA` and `latest`.
+  * Pushes the image to **Amazon ECR Tokyo**.
+  * Triggers automatic container deployment in **AWS App Runner**.
 
 ---
 
