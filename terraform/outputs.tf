@@ -13,12 +13,22 @@ output "rds_endpoint" {
   description = "Connection endpoint for RDS MySQL"
 }
 
-output "app_runner_url" {
-  value       = "https://${aws_apprunner_service.ledger_service.service_url}"
-  description = "Live public HTTPS URL of App Runner service"
+output "ecs_cluster_name" {
+  value       = aws_ecs_cluster.ledger_cluster.name
+  description = "Name of the ECS Fargate Cluster"
 }
 
-output "swagger_ui_url" {
-  value       = "https://${aws_apprunner_service.ledger_service.service_url}/swagger-ui/index.html"
-  description = "Live interactive Swagger UI documentation URL"
+output "ecs_service_name" {
+  value       = aws_ecs_service.ledger_service.name
+  description = "Name of the ECS Fargate Service"
+}
+
+output "github_actions_role_arn" {
+  value       = aws_iam_role.github_actions.arn
+  description = "IAM Role ARN for GitHub Actions OIDC Authentication"
+}
+
+output "get_task_public_ip_command" {
+  value       = "aws ecs list-tasks --cluster ${aws_ecs_cluster.ledger_cluster.name} --region ${var.aws_region}"
+  description = "AWS CLI command to list running Fargate tasks"
 }
