@@ -1,4 +1,4 @@
-name: Continuous Deployment (AWS App Runner)
+name: Continuous Deployment (AWS ECS Fargate)
 
 on:
   push:
@@ -8,21 +8,21 @@ on:
 
 permissions:
   contents: read
+  id-token: write
 
 jobs:
   deploy:
-    name: Build & Deploy to AWS ECR & App Runner
+    name: Build & Deploy to AWS ECR & ECS Fargate
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS Credentials
+      - name: Configure AWS Credentials via OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::450963614191:role/spring-bank-ledger-github-actions-role
           aws-region: ap-northeast-1
 
       - name: Log in to Amazon ECR
@@ -42,7 +42,11 @@ jobs:
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:$IMAGE_TAG
           docker push $ECR_REGISTRY/$ECR_REPOSITORY:latest
 
-      - name: Notify App Runner Deployment
+      - name: Deploy New Image to AWS ECS Fargate
         run: |
-          echo "Image successfully pushed to ECR."
-          echo "AWS App Runner auto-deployment is active and deploying the new container."
+          echo "Updating AWS ECS Fargate service with new ECR image..."
+          aws ecs update-service \
+            --cluster spring-bank-ledger-cluster \
+            --service spring-bank-ledger-service \
+            --force-new-deployment \
+            --region ap-northeast-1
