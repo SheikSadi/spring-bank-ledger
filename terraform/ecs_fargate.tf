@@ -130,9 +130,8 @@ resource "aws_ecs_task_definition" "ledger_task" {
       command = [
         "tunnel",
         "--no-autoupdate",
-        "run",
-        "--token",
-        var.cloudflare_tunnel_token
+        "--url",
+        "http://localhost:8080"
       ]
 
       logConfiguration = {
