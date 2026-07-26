@@ -137,8 +137,8 @@ resource "aws_ecs_task_definition" "ledger_task" {
       command = [
         "http",
         "127.0.0.1:8080",
-        "--domain",
-        var.ngrok_domain
+        "--url",
+        "https://${var.ngrok_domain}"
       ]
 
       logConfiguration = {
