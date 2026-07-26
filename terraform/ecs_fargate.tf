@@ -123,15 +123,22 @@ resource "aws_ecs_task_definition" "ledger_task" {
       }
     },
     {
-      name      = "cloudflared"
-      image     = "cloudflare/cloudflared:latest"
+      name      = "ngrok"
+      image     = "ngrok/ngrok:latest"
       essential = false
 
+      environment = [
+        {
+          name  = "NGROK_AUTHTOKEN"
+          value = var.ngrok_authtoken
+        }
+      ]
+
       command = [
-        "tunnel",
-        "--no-autoupdate",
-        "--url",
-        "http://127.0.0.1:8080"
+        "http",
+        "127.0.0.1:8080",
+        "--domain",
+        var.ngrok_domain
       ]
 
       logConfiguration = {
@@ -139,7 +146,7 @@ resource "aws_ecs_task_definition" "ledger_task" {
         options = {
           "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
           "awslogs-region"        = var.aws_region
-          "awslogs-stream-prefix" = "cloudflared"
+          "awslogs-stream-prefix" = "ngrok"
         }
       }
     }

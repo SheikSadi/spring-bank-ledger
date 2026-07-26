@@ -34,8 +34,13 @@ variable "db_name" {
   description = "Initial database name"
 }
 
-variable "cloudflare_tunnel_token" {
+variable "ngrok_authtoken" {
   type        = string
   sensitive   = true
-  description = "Cloudflare Tunnel Token for cloudflared sidecar"
+  description = "Ngrok Authtoken"
+}
+
+variable "ngrok_domain" {
+  type        = string
+  description = "Ngrok Free Static Domain (e.g. yourname-ledger.ngrok-free.app)"
 }
