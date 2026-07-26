@@ -121,6 +121,28 @@ resource "aws_ecs_task_definition" "ledger_task" {
           "awslogs-stream-prefix" = "ecs"
         }
       }
+    },
+    {
+      name      = "cloudflared"
+      image     = "cloudflare/cloudflared:latest"
+      essential = false
+
+      command = [
+        "tunnel",
+        "--no-autoupdate",
+        "run",
+        "--token",
+        var.cloudflare_tunnel_token
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs"
+        options = {
+          "awslogs-group"         = aws_cloudwatch_log_group.ecs_logs.name
+          "awslogs-region"        = var.aws_region
+          "awslogs-stream-prefix" = "cloudflared"
+        }
+      }
     }
   ])
 

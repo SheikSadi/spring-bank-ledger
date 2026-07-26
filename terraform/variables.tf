@@ -33,3 +33,9 @@ variable "db_name" {
   default     = "ledger"
   description = "Initial database name"
 }
+
+variable "cloudflare_tunnel_token" {
+  type        = string
+  sensitive   = true
+  description = "Cloudflare Tunnel Token for cloudflared sidecar"
+}
