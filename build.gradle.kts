@@ -44,10 +44,50 @@ dependencies {
 }
 
 tasks.withType<Test> {
+	// Automatically load .env environment variables for tests
+	val envFile = file(".env")
+	if (envFile.exists()) {
+		envFile.readLines().forEach { line ->
+			val trimmed = line.trim()
+			if (trimmed.isNotBlank() && !trimmed.startsWith("#")) {
+				val parts = trimmed.split("=", limit = 2)
+				if (parts.size == 2) {
+					val key = parts[0].trim()
+					var value = parts[1].trim()
+					if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+						value = value.substring(1, value.length - 1)
+					}
+					environment(key, value)
+				}
+			}
+		}
+	}
+
 	useJUnitPlatform()
 	testLogging {
 		events("passed", "skipped", "failed")
 		showStandardStreams = false
 		exceptionFormat=org.gradle.api.tasks.testing.logging.TestExceptionFormat.SHORT
+	}
+}
+
+tasks.withType<org.springframework.boot.gradle.tasks.run.BootRun> {
+	// Automatically load .env environment variables for bootRun
+	val envFile = file(".env")
+	if (envFile.exists()) {
+		envFile.readLines().forEach { line ->
+			val trimmed = line.trim()
+			if (trimmed.isNotBlank() && !trimmed.startsWith("#")) {
+				val parts = trimmed.split("=", limit = 2)
+				if (parts.size == 2) {
+					val key = parts[0].trim()
+					var value = parts[1].trim()
+					if ((value.startsWith("\"") && value.endsWith("\"")) || (value.startsWith("'") && value.endsWith("'"))) {
+						value = value.substring(1, value.length - 1)
+					}
+					environment(key, value)
+				}
+			}
+		}
 	}
 }
