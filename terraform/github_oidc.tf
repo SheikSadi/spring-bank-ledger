@@ -30,11 +30,12 @@ resource "aws_iam_role" "github_actions" {
             "token.actions.githubusercontent.com:aud" = "sts.amazonaws.com"
           }
           StringLike = {
-            "token.actions.githubusercontent.com:sub" = [
-              "repo:SheikSadi*/spring-bank-ledger*:*",
-              "repo:sheiksadi*/spring-bank-ledger*:*"
-            ]
-          }
+					  "token.actions.githubusercontent.com:sub" = [
+					    # GitHub User ID: 34588815
+							# Repository ID: 1312067919
+							"repo:SheikSadi@34588815/spring-bank-ledger@1312067919:*"
+					  ]
+					}
         }
       }
     ]
