@@ -39,6 +39,11 @@ public class AuthService {
     ;
   }
 
+  // TODO: Remove hardcoded credentials from SecurityProperties and fetch directly from MySQL database (users table)
+  // 1. Define a 'users' table schema in a Flyway migration (e.g., V3__create_users_table.sql)
+  // 2. Create UserEntity mapped via JPA and a Spring Data JpaUserRepository
+  // 3. Implement BCrypt password hashing when registering/saving a user
+  // 4. Query JpaUserRepository by request.email() and check passwordEncoder.matches()
   public Optional<LoginResponse> loginUser(LoginRequest request) {
 
     List<String> roles = List.of("USER");
