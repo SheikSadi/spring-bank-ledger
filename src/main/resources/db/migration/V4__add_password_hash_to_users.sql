@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN password_hash VARCHAR(256) NOT NULL;
