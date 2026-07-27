@@ -13,20 +13,21 @@ import com.auth0.jwt.JWT;
 @Service
 public class AuthService {
 
-  private final SecurityProperties securityProperties;
+  private final UserService userService;
 
-  private final AdminProperties adminProperties;
+  private final SecurityProperties securityProperties;
 
   private final PasswordEncoder passwordEncoder;
 
   public AuthService(
-    PasswordEncoder passwordEncoder,
+    UserService userService,
     SecurityProperties securityProperties,
-    AdminProperties adminProperties
+    AdminProperties adminProperties,
+    PasswordEncoder passwordEncoder
   ) {
+    this.userService = userService;
     this.passwordEncoder = passwordEncoder;
     this.securityProperties = securityProperties;
-    this.adminProperties = adminProperties;
   }
   
   public String generateToken(String email, List<String> roles) {
@@ -50,36 +51,68 @@ public class AuthService {
   // 4. Query JpaUserRepository by request.email() and check passwordEncoder.matches()
   public Optional<LoginResponse> loginUser(LoginRequest request) {
 
-    List<String> roles = List.of();
     LoginResponse response;
 
-    if (
-      request.email().equals(adminProperties.email())
-      && passwordEncoder
-          .matches(request.password(), adminProperties.passwordHash())
-    ) {
-      roles = List.of("ADMIN", "USER");
-      response = new LoginResponse(
-        request.email(),
-        generateToken(request.email(), roles),
-        roles
-      );
-    }
-    else if (
-      request.email().equals(securityProperties.knownEmail())
-      && passwordEncoder
-        .matches(request.password(), securityProperties.knownPasswordHash())
-    ) {
-      roles = List.of("USER");
-      response = new LoginResponse(
-        request.email(),
-        generateToken(request.email(), roles),
-        roles
-      );
-    }
-    else {
+    List<String> roles;
+
+    String hash = userService.findPasswordHash(request.email()).get();
+
+    if (hash == null) {
       response = null;
+    } else {
+      boolean isMatch = passwordEncoder.matches(request.password(), hash);
+      if (!isMatch) {
+        response = null;
+      } else {
+        String role = userService.getRole(request.email()).get();
+
+        if (role == null) {
+          response = null;
+        } else {
+
+          roles = "ADMIN".equalsIgnoreCase(role)
+            ? List.of("ADMIN", "USER")
+            : List.of("USER")
+          ;
+
+          response = new LoginResponse(
+            request.email(),
+            generateToken(request.email(), roles),
+            roles
+          );
+        }
+      }
     }
+
     return Optional.ofNullable(response);
+
+    // if (
+    //   request.email().equals(adminProperties.email())
+    //   && passwordEncoder
+    //       .matches(request.password(), adminProperties.passwordHash())
+    // ) {
+    //   roles = List.of("ADMIN", "USER");
+    //   response = new LoginResponse(
+    //     request.email(),
+    //     generateToken(request.email(), roles),
+    //     roles
+    //   );
+    // }
+    // else if (
+    //   request.email().equals(securityProperties.knownEmail())
+    //   && passwordEncoder
+    //     .matches(request.password(), securityProperties.knownPasswordHash())
+    // ) {
+    //   roles = List.of("USER");
+    //   response = new LoginResponse(
+    //     request.email(),
+    //     generateToken(request.email(), roles),
+    //     roles
+    //   );
+    // }
+    // else {
+    //   response = null;
+    // }
+    // return Optional.ofNullable(response);
   }
 }

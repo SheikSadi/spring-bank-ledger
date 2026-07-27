@@ -35,10 +35,16 @@ public class AuthIntegrationTest {
   @Autowired
   private ObjectMapper objectMapper;
 
+  private static final String adminEmail = System.getenv("ADMIN_EMAIL");
+  private static final String adminPassword = System.getenv("ADMIN_PASSWORD");
+  private static final String testEmail = System.getenv("TEST_EMAIL");
+  private static final String testPassword = System.getenv("TEST_PASSWORD");
+
+
   private static Stream<LoginRequest> provideLoginRequests() {
     return Stream.of(
-      new LoginRequest("admin@example.com", "admin_password"),
-      new LoginRequest("test@example.com", "test_password")
+      new LoginRequest(adminEmail, adminPassword),
+      new LoginRequest(testEmail, testPassword)
     );
   }
 
@@ -75,13 +81,25 @@ public class AuthIntegrationTest {
 
   @ParameterizedTest
   @CsvSource({
-    "admin@example.com, admin_password, true",
-    "test@example.com, test_password, false"
+    "admin, true",
+    "user, false"
   })
   void testHasAdminAuthority(
-    String email, String password, boolean isOk
+    String scope, boolean isOk
   ) throws Exception {
+    
+    String email = "admin".equalsIgnoreCase(scope)
+      ? adminEmail
+      : testEmail
+    ;
+
+    String password = "admin".equalsIgnoreCase(scope)
+      ? adminPassword
+      : testPassword
+    ;
+
     LoginRequest request = new LoginRequest(email, password);
+    
     String body = objectMapper.writeValueAsString(request);
     
     MvcResult result = mockMvc.perform(
@@ -107,7 +125,7 @@ public class AuthIntegrationTest {
     ;
 
     mockMvc.perform(
-      get("/admin/users")
+      get("/users")
         .header("Authorization", "Bearer " + token)
     )
       .andExpect(expectedStatus)

@@ -45,7 +45,7 @@ public class AuthControllerTest {
       Optional.of(
         new LoginResponse(
           "a@b",
-          "test_password",
+          "token",
           List.of("USER")
         )
       )
