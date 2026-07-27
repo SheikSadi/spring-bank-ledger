@@ -46,15 +46,6 @@ public class OpenApiConfig {
   }
 
   @Bean
-  public GroupedOpenApi adminApi() {
-    return GroupedOpenApi.builder()
-      .group("admin")
-      .pathsToMatch("/admin/**")
-      .build()
-    ;
-  }
-
-  @Bean
   public GroupedOpenApi authApi() {
     return GroupedOpenApi.builder()
       .group("auth")
@@ -84,6 +75,16 @@ public class OpenApiConfig {
       .build()
     ;
   }
+
+  @Bean
+  public GroupedOpenApi usersApi() {
+    return GroupedOpenApi.builder()
+      .group("users")
+      .pathsToMatch("/users/**")
+      .build()
+    ;
+  }
+
 
   /* Why /actuator needed .addOpenApiCustomizer
   (Framework Endpoint Abstraction)
