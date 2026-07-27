@@ -28,4 +28,14 @@ public class AuthController {
     ;
     return ResponseEntity.ok().body(body);
   }
+
+  @GetMapping("/auth/whoami")
+  ResponseEntity<?> whoami(JwtAuthenticationToken token) {
+    Map<String, Object> response = new HashMap<>();
+    response.put("attributes", token.getTokenAttributes());
+    response.put("authorities", token.getAuthorities());
+    
+    return ResponseEntity.ok().body(response);
+  }
+
 }
