@@ -54,4 +54,5 @@ jobs:
           ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD }}
           TEST_EMAIL: ${{ vars.TEST_EMAIL }}
           TEST_PASSWORD: ${{ vars.TEST_PASSWORD }}
+          JWT_SECRET: "ci-test-secret-must-be-at-least-256-bits-long"
         run: ./gradlew test
