@@ -18,10 +18,10 @@ jobs:
       mysql:
         image: mysql:8.0
         env:
-          MYSQL_DATABASE: ledger
-          MYSQL_USER: ledger_user
-          MYSQL_PASSWORD: ledger_password
-          MYSQL_ROOT_PASSWORD: root_password
+          MYSQL_DATABASE: ${{ vars.MYSQL_DATABASE }}
+          MYSQL_USER: ${{ vars.MYSQL_USER }}
+          MYSQL_PASSWORD: ${{ vars.MYSQL_PASSWORD }}
+          MYSQL_ROOT_PASSWORD: ${{ vars.MYSQL_ROOT_PASSWORD }}
         ports:
           - 3306:3306
         options: >-
@@ -47,7 +47,11 @@ jobs:
       - name: Run Test Suite with Gradle
         env:
           SPRING_PROFILES_ACTIVE: mysql
-          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/ledger?useSSL=false&allowPublicKeyRetrieval=true
-          SPRING_DATASOURCE_USERNAME: ledger_user
-          SPRING_DATASOURCE_PASSWORD: ledger_password
+          SPRING_DATASOURCE_URL: jdbc:mysql://localhost:3306/${{ vars.MYSQL_DATABASE }}?useSSL=false&allowPublicKeyRetrieval=true
+          SPRING_DATASOURCE_USERNAME: ${{ vars.MYSQL_USER }}
+          SPRING_DATASOURCE_PASSWORD: ${{ vars.MYSQL_PASSWORD }}
+          ADMIN_EMAIL: ${{ vars.ADMIN_EMAIL }}
+          ADMIN_PASSWORD: ${{ vars.ADMIN_PASSWORD }}
+          TEST_EMAIL: ${{ vars.TEST_EMAIL }}
+          TEST_PASSWORD: ${{ vars.TEST_PASSWORD }}
         run: ./gradlew test
